@@ -33,7 +33,7 @@ module RubyLsp
           return unless valid_group?(node)
 
           handle_describe(node)
-        when "it", "specify", "example", "scenario"
+        when "it", "its_block", "specify", "example", "scenario"
           handle_example(node)
         end
       end
