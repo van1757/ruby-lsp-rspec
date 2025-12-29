@@ -211,5 +211,34 @@ RSpec.describe "RubyLsp::RSpec::RSpecFormatter" do
 
       formatter.start_dump(dump_notification)
     end
+
+    context "with synthetic groups" do
+      let(:spec_path) { "spec/test_spec.rb" }
+      let(:gem_path) { "/path/to/gem/lib/gem/helper.rb" }
+
+      let(:parent1) { double("ParentGroup1") }
+      let(:synthetic_group) { double("SyntheticGroup") }
+      let(:parent2) { double("ParentGroup2") }
+      let(:example_group) { double("ExampleGroup") }
+      let(:test_example) { double("Example") }
+
+      before do
+        allow(parent1).to receive(:location).and_return("./#{spec_path}:11")
+        allow(synthetic_group).to receive(:location).and_return("#{gem_path}:36")
+        allow(parent2).to receive(:location).and_return("./#{spec_path}:14")
+        allow(example_group).to receive(:parent_groups).and_return([parent1, synthetic_group, parent2])
+
+        allow(test_example).to receive(:location).and_return("./#{spec_path}:20")
+        allow(test_example).to receive(:file_path).and_return(spec_path)
+        allow(test_example).to receive(:example_group).and_return(example_group)
+      end
+
+      it "filters out synthetic groups from gem files when generating IDs" do
+        id = formatter.generate_id(test_example)
+
+        expect(id).to eq("./#{spec_path}:14::./#{spec_path}:11::./#{spec_path}:20")
+        expect(id).not_to include(gem_path)
+      end
+    end
   end
 end

@@ -74,7 +74,16 @@ module RubyLsp
       end
 
       def generate_id(example)
-        [example, *example.example_group.parent_groups].reverse.map(&:location).join("::")
+        example_file = example.location.split(":", 2).first
+
+        # Filter out synthetic groups from gem files (like moarspec's its_block)
+        groups = [example, *example.example_group.parent_groups].reverse.reject do |group_or_example|
+          next false if group_or_example == example
+
+          group_or_example.location.split(":", 2).first != example_file
+        end
+
+        groups.map(&:location).join("::")
       end
 
       def adjust_backtrace(backtrace)
