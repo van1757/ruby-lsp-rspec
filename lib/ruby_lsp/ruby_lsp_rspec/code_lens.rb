@@ -24,7 +24,7 @@ module RubyLsp
       #: (Prism::CallNode) -> void
       def on_call_node_enter(node)
         case node.message
-        when "example", "it", "specify", "scenario"
+        when "example", "it", "its_block", "specify", "scenario"
           name = generate_name(node)
           add_test_code_lens(node, name: name, kind: :example)
         when "context", "describe", "feature"
