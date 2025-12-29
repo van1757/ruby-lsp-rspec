@@ -26,7 +26,7 @@ module RubyLsp
 
       #: (Prism::CallNode) -> void
       def on_call_node_enter(node)
-        return unless ["describe", "context", "it", "specify", "example", "feature", "scenario"].include?(node.message)
+        return unless ["describe", "context", "it", "its_block", "specify", "example", "feature", "scenario"].include?(node.message)
 
         case node.message
         when "describe", "context", "feature"
