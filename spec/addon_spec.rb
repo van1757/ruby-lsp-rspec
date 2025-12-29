@@ -93,6 +93,34 @@ RSpec.describe RubyLsp::RSpec::Addon do
       end
     end
 
+    it "resolves commands for test files with range (mis-tagged test case)" do
+      with_server do |server|
+        server.process_message(
+          {
+            id: 1,
+            method: "rubyLsp/resolveTestCommands",
+            params: {
+              items: [
+                {
+                  id: "spec/example_spec.rb",
+                  label: "example_spec.rb",
+                  range: { start: { line: 10 }, end: { line: 12 } },
+                  tags: ["mis-tagged", "framework:rspec"],
+                  uri: uri,
+                  children: [],
+                },
+              ],
+            },
+          },
+        )
+
+        response = pop_result(server).response
+        expect(response[:commands]).to eq([
+          "bundle exec rspec -r #{formatter_absolute_path} -f #{formatter_name} /fake_spec.rb:11",
+        ])
+      end
+    end
+
     it "resolves commands for the whole project" do
       project_uri = "file:///test-project"
       with_server do |server|

@@ -104,6 +104,8 @@ module RubyLsp
           path = uri.full_path
           next unless path
 
+          start_line = item.dig(:range, :start, :line)
+
           if tags.include?("test_dir")
             if children.empty?
               full_files.concat(Dir.glob(
@@ -114,10 +116,11 @@ module RubyLsp
           elsif tags.include?("test_file")
             full_files << path if children.empty?
           elsif tags.include?("test_group")
-            start_line = item.dig(:range, :start, :line)
             commands << "#{@rspec_command} -r #{FORMATTER_PATH} -f #{FORMATTER_NAME} #{path}:#{start_line + 1}"
           elsif tags.include?("test_case")
             full_files << "#{path}:#{item.dig(:range, :start, :line) + 1}"
+          elsif start_line && children.empty? && path.end_with?("_spec.rb")
+            commands << "#{@rspec_command} -r #{FORMATTER_PATH} -f #{FORMATTER_NAME} #{path}:#{start_line + 1}"
           else
             # whole project
             full_files << path
